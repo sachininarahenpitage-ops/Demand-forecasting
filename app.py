@@ -59,9 +59,9 @@ FEATURES = ["lag_1","lag_7","lag_14","lag_30","lag_60","lag_90",
             "dow","month","is_month_start","is_month_end","days_since_issue",
             "family","material","stock_type","reorder_qty","reorder_ratio"]
 PARAMS = dict(objective="tweedie", tweedie_variance_power=1.2,
-              n_estimators=1200, learning_rate=0.02, num_leaves=63,
-              min_child_samples=100, subsample=0.8, subsample_freq=1,
-              colsample_bytree=0.8, reg_lambda=1.0, n_jobs=-1, verbosity=-1)
+              n_estimators=300, learning_rate=0.05, num_leaves=31,
+              min_child_samples=50, subsample=0.8, subsample_freq=1,
+              colsample_bytree=0.8, reg_lambda=1.0, n_jobs=1, verbosity=-1)
 
 # ── Helper functions ──────────────────────────────────────────────────────────
 def _prep(df):
@@ -75,14 +75,14 @@ def train_one(df, target_col, grain, progress_bar, status_text, offset, span):
     df = _prep(df).dropna(subset=[target_col])
     X, y = df[FEATURES], df[target_col]
     cats = [c for c in CAT if c in X.columns]
-    tscv = TimeSeriesSplit(n_splits=5)
+    tscv = TimeSeriesSplit(n_splits=3)
     cv_mae = []
     for i, (tr, va) in enumerate(tscv.split(X)):
         m = lgb.LGBMRegressor(**PARAMS)
         m.fit(X.iloc[tr], y.iloc[tr], categorical_feature=cats)
         cv_mae.append(np.mean(np.abs(m.predict(X.iloc[va]) - y.iloc[va])))
         progress_bar.progress(offset + span * (i + 1) / 5)
-        status_text.text(f"Training {grain} | horizon {target_col} — CV fold {i+1}/5")
+        status_text.text(f"Training {grain} | horizon {target_col} — CV fold {i+1}/3")
     model = lgb.LGBMRegressor(**PARAMS).fit(X, y, categorical_feature=cats)
     return model, float(np.mean(cv_mae))
 
