@@ -75,9 +75,9 @@ def show_login():
 # ── Data loading ──────────────────────────────────────────────────────────────
 @st.cache_data
 def load_data():
-    grn    = pd.read_excel("/mnt/user-data/uploads/GRN_Dataset.xlsx",      parse_dates=["TRANSACTION_DATE"])
-    issued = pd.read_excel("/mnt/user-data/uploads/Issued_Dataset.xlsx",   parse_dates=["TRANSACTION_DATE"])
-    req    = pd.read_excel("/mnt/user-data/uploads/Requested_Data.xlsx",   parse_dates=["REQUESTED_ON"])
+    grn    = pd.read_parquet("GRN_Dataset.parquet")
+    issued = pd.read_parquet("Issued_Dataset.parquet")
+    req    = pd.read_parquet("Requested_Data.parquet")
     # clean
     for df in [grn, issued]:
         df["ITEM_CODE"]        = df["ITEM_CODE"].astype(str).str.strip()
